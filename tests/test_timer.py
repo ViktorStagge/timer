@@ -76,9 +76,9 @@ class TestTimerMethods(unittest.TestCase):
             sleep(0.1)
 
         timer.new_checkpoint(name='victory lap')
-        for _ in range(3):
+        for _ in range(10):
             timer()
-            sleep(0.4)
+            sleep(1.3)
 
         summary = timer.summary()
         print(f'{self.test_summary.__name__}\n')

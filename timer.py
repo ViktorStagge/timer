@@ -8,12 +8,13 @@ class Timer:
     _checkpoints = []
 
     @classmethod
-    def __new__(cls, *args, name='timer', output_format=str, **kwargs):
+    def __new__(cls, *args, name='timer', output_format=str, print_decimals=3, **kwargs):
         if not hasattr(cls, '_timer') or cls._timer is None:
             cls._timer = super(Timer, cls).__new__(cls)
 
             cls._name = name
             cls._format = output_format
+            cls._decimals = print_decimals
             cls._start_checkpoint = Checkpoint(name=_first_checkpoint_name)
             cls._current_checkpoint = cls._start_checkpoint
             cls._checkpoints.append(cls._start_checkpoint)
@@ -95,14 +96,16 @@ class Timer:
 
     @classmethod
     def summary(cls):
+        max_start_time_length = len(f'{cls.duration().total_seconds():.0f}') + cls._decimals + (cls._decimals > 0)
         longest_checkpoint_name = max((len(c.name) for c in cls._checkpoints))
+        longest_duration = max((len(f'{c.duration().total_seconds():.0f}') for c in cls._checkpoints)) + cls._decimals + (cls._decimals > 0)
 
         _summary = f'{cls._name} summary\n'
         for checkpoint in cls._checkpoints:
             _summary += f'{checkpoint.name + ": " if checkpoint.name is not None else "":{longest_checkpoint_name + 2}}'
-            _summary += f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():4.3f}s\t'
-            _summary += f'duration={checkpoint.duration().total_seconds():4.3f}s\n'
-        _summary += f'{"end:":{longest_checkpoint_name + 2}}{cls.duration().total_seconds():4.3f}s\n'
+            _summary += f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():{max_start_time_length}.{cls._decimals}f}s\t'
+            _summary += f'duration={checkpoint.duration().total_seconds():{longest_duration}.{cls._decimals}f}s\n'
+        _summary += f'{"end:":{longest_checkpoint_name + 2}}{cls.duration().total_seconds():{max_start_time_length}.{cls._decimals}f}s\n'
 
         return _summary
 
