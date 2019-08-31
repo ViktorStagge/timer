@@ -2,7 +2,7 @@
 Easy-to-use timer for tracking runtimes.
 
 ## Examples
-
+### Main functionality: summary function
 
 ```
 from timer import timer
@@ -25,9 +25,9 @@ timer summary
               -start-   -duration-
 start:         0.000s     0.100s
 checkpoint_0:  0.100s     2.305s
-useful-name:   2.305s     0.410s
-victory lap:   2.715s    12.001s
-end:          14.716s
+useful-name:   2.405s     0.410s
+victory lap:   2.815s    12.001s
+end:          14.816s
 ```
 <br>
 
@@ -66,11 +66,11 @@ heavy_preprocessing(data)
 inefficient_method(data)
 
 timer.summary()
->>> timer summary
+>>> 'timer summary
                            -start-   -duration-
 start:                      0.000s      0.000s
 heavy_preprocessing:        0.000s     25.101s
 more-descriptive-name:     25.101s     13.001s
-end:                       38.102s
+end:                       38.102s'
 ```
 
