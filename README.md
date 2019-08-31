@@ -4,7 +4,7 @@ Easy-to-use timer for tracking runtimes.
 ## Examples
 ### Main functionality: summary function
 
-```
+```python
 from timer import timer
 
 # Main functionality is the summary function:
@@ -32,12 +32,12 @@ end:          14.816s
 <br>
 
 ### `timer.__call__()` returns a one-liner
-```
+```python
 timer()
 >>> 'timer:	 0.202s'
 ```
 
-```
+```python
 # and with an active checkpoint:
 timer()
 >>> 'timer:	 0.303s	    checkpoint_0:  0.050s'
@@ -49,7 +49,7 @@ timer()
 Some functions are always heavy (e.g. _load_, _data preprocessing_, _data augmentation_)
 and might be useful to time:
 
-```
+```python
 @time_this_method
 def heavy_preprocessing(data):
     pass
