@@ -44,6 +44,7 @@ timer()
 ```
 
 <br>
+
 ### `@time_this_method` decorator to avoid clutter
 Some functions are always heavy (e.g. _load_, _data preprocessing_, _data augmentation_)
 and might be useful to time:
