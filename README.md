@@ -29,6 +29,7 @@ useful-name:   2.305s     0.410s
 victory lap:   2.715s    12.001s
 end:          14.716s
 ```
+<br>
 
 ### `timer.__call__()` returns a one-liner
 ```
@@ -42,6 +43,7 @@ timer()
 >>> 'timer:	 0.303s	    checkpoint_0:  0.050s'
 ```
 
+<br>
 ### `@time_this_method` decorator to avoid clutter
 Some functions are always heavy (e.g. _load_, _data preprocessing_, _data augmentation_)
 and might be useful to time:
