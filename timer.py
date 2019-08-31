@@ -81,7 +81,9 @@ class Timer:
 
     @classmethod
     def new_checkpoint(cls, name=None):
-        cls._current_checkpoint.end_checkpoint()
+        if cls._has_active_checkpoint():
+            cls._current_checkpoint.end_checkpoint()
+
         checkpoint = Checkpoint(name=name)
         cls._current_checkpoint = checkpoint
         cls._checkpoints.append(checkpoint)
@@ -114,6 +116,10 @@ class Timer:
         return len(cls._checkpoints) > 1
 
     @classmethod
+    def _has_active_checkpoint(cls):
+        return cls._current_checkpoint is not None
+
+    @classmethod
     def summary(cls):
         max_start_time_length = len(f'{cls.duration().total_seconds():.0f}') + cls._decimals + (cls._decimals > 0)
         longest_checkpoint_name = max((len(c.name) for c in cls._checkpoints))
@@ -122,7 +128,7 @@ class Timer:
         _summary = f'{cls._name} summary\n'
         for checkpoint in cls._checkpoints:
             _summary += f'{checkpoint.name + ": " if checkpoint.name is not None else "":{longest_checkpoint_name + 2}}'
-            _summary += f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():{max_start_time_length}.{cls._decimals}f}s\t'
+            _summary += f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():{max_start_time_length}.{cls._decimals}f}s    '
             _summary += f'duration={checkpoint.duration().total_seconds():{longest_duration}.{cls._decimals}f}s\n'
         _summary += f'{"end:":{longest_checkpoint_name + 2}}{cls.duration().total_seconds():{max_start_time_length}.{cls._decimals}f}s\n'
 
@@ -134,6 +140,24 @@ class Timer:
         cls._current_checkpoint = cls._start_checkpoint
         cls._checkpoints = [cls._start_checkpoint]
         return cls._timer
+
+
+def time_this_method(method=None, name=None):
+    def wrapper(method):
+        def _time_this_method(*args, **kwargs):
+            _name = name or method.__name__
+            timer.new_checkpoint(name=_name)
+            returned_from_method = method(*args, **kwargs)
+            timer.end_checkpoint()
+            return returned_from_method
+        return _time_this_method
+
+    # decorator call, i.e. `@time_this_method`
+    if method is not None:
+        return wrapper(method)
+
+    # factory call, i.e.`@time_this_method()`
+    return wrapper
 
 
 class Checkpoint:
@@ -158,5 +182,9 @@ class Checkpoint:
         if self.end is None:
             self.end = datetime.now()
 
+
+# @time_everything
+# def alot_of_things():
+#   pass
 
 timer = Timer()
