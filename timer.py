@@ -13,10 +13,11 @@ class Timer:
             cls._timer = super(Timer, cls).__new__(cls)
 
             cls._name = name
-            cls._format = output_format
+            cls._output_format = output_format
             cls._decimals = print_decimals
             cls._start_checkpoint = Checkpoint(name=_first_checkpoint_name)
             cls._current_checkpoint = cls._start_checkpoint
+            cls._end_checkpoint = None
             cls._checkpoints.append(cls._start_checkpoint)
         return cls._timer
 
@@ -35,28 +36,30 @@ class Timer:
 
     @classmethod
     def _describe_time(cls, time_since_start=None, time_since_checkpoint=None, description=None):
-        if time_since_start is None:
-            time_since_start = cls._time_since_start()
-
-        if cls._format == str:
-            return cls._describe_time_as_string(time_since_start=time_since_start,
-                                                time_since_checkpoint=time_since_checkpoint,
-                                                description=description)
-        elif cls._format == int:
+        if cls._output_format == str:
+            return cls._describe_time_as_string(description=description)
+        elif cls._output_format == int:
             return cls._describe_time_as_int(time_since_start=time_since_start)
         else:
             raise NotImplementedError()
 
     @classmethod
-    def _describe_time_as_string(cls, time_since_start=None, time_since_checkpoint=None, description=None):
-        if description is None:
-            description = ''
+    def _describe_time_as_string(cls, show_checkpoint=True, description=None):
+        min_length = 2 + cls._decimals + (cls._decimals > 0)
 
-        time_string = f'{cls._name}:\t{time_since_start}'
-        if time_since_checkpoint is not None:
-            checkpoint_name_string = f'{cls._current_checkpoint.name + ":":<15}\t' if cls._current_checkpoint.name else ''
-            time_string += f'.\t\t{checkpoint_name_string}{time_since_checkpoint}\t{description}'
-        return time_string
+        name = f'{cls._name}:\t'
+        time = f'{cls.duration().total_seconds():{min_length}.{cls._decimals}f}s'
+
+        time_as_string = name + time
+        if show_checkpoint and cls._has_checkpoint() and cls._current_checkpoint is not None:
+            checkpoint_name = f'\t\t{cls._current_checkpoint.name}: ' if cls._current_checkpoint.name else '\t\t'
+            checkpoint_time = f'{cls._current_checkpoint.duration().total_seconds():{min_length}.{cls._decimals}f}s'
+            time_as_string += checkpoint_name + checkpoint_time
+
+        if description is not None:
+            time_as_string += '\t' + description
+
+        return time_as_string
 
     @classmethod
     def _describe_time_as_int(cls, time_since_start):
@@ -87,12 +90,28 @@ class Timer:
     @classmethod
     def duration(cls):
         start_time = cls._checkpoints[0].start
-        end_time = cls._checkpoints[-1].end or datetime.now()
+        end_time = datetime.now()
+        if cls._end_checkpoint is not None:
+            raise
+            end_time = cls._end_checkpoint.end or end_time
         return end_time - start_time
 
     @classmethod
     def set_unit(cls, unit=str):
         pass
+
+    @classmethod
+    def end_timer(cls):
+        pass
+
+    @classmethod
+    def end_checkpoint(cls):
+        cls._current_checkpoint.end_checkpoint()
+        cls._current_checkpoint = None
+
+    @classmethod
+    def _has_checkpoint(cls):
+        return len(cls._checkpoints) > 1
 
     @classmethod
     def summary(cls):

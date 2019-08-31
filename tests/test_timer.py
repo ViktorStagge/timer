@@ -22,6 +22,9 @@ class TestTimerMethods(unittest.TestCase):
             print(actual)
 
     def test_restart(self):
+        timer.new_checkpoint()
+        timer.new_checkpoint(name='two')
+        timer.new_checkpoint()
         sleep(1)
         timer.restart()
         self.assertTrue(len(timer._checkpoints) == 1)
@@ -29,11 +32,13 @@ class TestTimerMethods(unittest.TestCase):
         self.assertTrue(timer._start_checkpoint.duration() < timedelta(milliseconds=500))
 
     def test_one_checkpoint(self):
+        timer.restart()
         _start_checkpoint_before = timer._start_checkpoint
         _current_checkpoint_before = timer._current_checkpoint
         number_of_checkpoints_before = len(timer._checkpoints)
 
         print(f'{self.test_one_checkpoint.__name__}\n')
+
         for _ in range(3):
             print(timer())
             sleep(0.1)
@@ -64,25 +69,27 @@ class TestTimerMethods(unittest.TestCase):
     def test_summary(self):
         timer.restart()
 
-        [timer() for _ in range(3)]
         timer.new_checkpoint(name='checkpoint_0')
-        for _ in range(3):
-            timer()
-            sleep(0.1)
-
+        sleep(0.3)
         timer.new_checkpoint(name='checkpoint_1')
-        for _ in range(3):
-            timer()
-            sleep(0.1)
-
+        sleep(0.3)
         timer.new_checkpoint(name='victory lap')
-        for _ in range(10):
-            timer()
-            sleep(1.3)
+        sleep(13)
 
         summary = timer.summary()
         print(f'{self.test_summary.__name__}\n')
         print(summary)
+
+    def test_end_checkpoint(self):
+        timer.restart()
+
+        timer.new_checkpoint(name='checkpoint_0')
+        timer.new_checkpoint(name='checkpoint_1')
+        sleep(2)
+        timer.end_checkpoint()
+        sleep(2)
+        final_time = timer.duration().total_seconds()
+        self.assertTrue(final_time > 3, 'end_checkpoint affects timers endtime')
 
 
 if __name__ == '__main__':
