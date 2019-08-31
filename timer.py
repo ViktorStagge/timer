@@ -183,8 +183,4 @@ class Checkpoint:
             self.end = datetime.now()
 
 
-# @time_everything
-# def alot_of_things():
-#   pass
-
 timer = Timer()
