@@ -123,10 +123,14 @@ class Timer:
 
         _summary = f'{cls._name} summary\n'
         for checkpoint in cls._checkpoints:
-            _summary += f'{checkpoint.name + ": " if checkpoint.name is not None else "":{longest_checkpoint_name + 2}}'
-            _summary += f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():{max_start_time_length}.{cls._decimals}f}s    '
-            _summary += f'duration={checkpoint.duration().total_seconds():{longest_duration}.{cls._decimals}f}s\n'
-        _summary += f'{"end:":{longest_checkpoint_name + 2}}{cls.duration().total_seconds():{max_start_time_length}.{cls._decimals}f}s\n'
+            name = f'{checkpoint.name + ": " if checkpoint.name is not None else "":{longest_checkpoint_name + 2}}'
+            time = f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():{max_start_time_length}.{cls._decimals}f}s    '
+            duration = f'duration={checkpoint.duration().total_seconds():{longest_duration}.{cls._decimals}f}s\n'
+            _summary += name + time + duration
+
+        end_name = f'{"end:":{longest_checkpoint_name + 2}}'
+        end_duration = f'{cls.duration().total_seconds():{max_start_time_length}.{cls._decimals}f}s\n'
+        _summary += end_name + end_duration
 
         return _summary
 
