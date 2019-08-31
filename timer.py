@@ -6,6 +6,12 @@ _first_checkpoint_name = 'start'
 
 class Timer:
     _checkpoints = []
+    _name = None
+    _output_format = None
+    _decimals = None
+    _start_checkpoint = None
+    _current_checkpoint = None
+    _end_checkpoint = None
 
     @classmethod
     def __new__(cls, *args, name='timer', output_format=str, print_decimals=3, **kwargs):
@@ -22,24 +28,14 @@ class Timer:
         return cls._timer
 
     def __call__(self, description=None):
-        now = datetime.now()
-        time_since_start = self._time_since_start(timestamp=now)
-        if self._start_checkpoint != self._current_checkpoint:
-            time_since_checkpoint = self._time_since_checkpoint(timestamp=now)
-        else:
-            time_since_checkpoint = None
-
-        time = self._describe_time(time_since_start=time_since_start,
-                                   time_since_checkpoint=time_since_checkpoint,
-                                   description=description)
-        return time
+        return self._describe_time(description=description)
 
     @classmethod
-    def _describe_time(cls, time_since_start=None, time_since_checkpoint=None, description=None):
+    def _describe_time(cls, description=None):
         if cls._output_format == str:
             return cls._describe_time_as_string(description=description)
-        elif cls._output_format == int:
-            return cls._describe_time_as_int(time_since_start=time_since_start)
+        elif cls._output_format == float:
+            return cls._describe_time_as_float()
         else:
             raise NotImplementedError()
 
@@ -62,8 +58,8 @@ class Timer:
         return time_as_string
 
     @classmethod
-    def _describe_time_as_int(cls, time_since_start):
-        return time_since_start
+    def _describe_time_as_float(cls):
+        return cls.duration().total_seconds()
 
     @classmethod
     def _time_since_start(cls, timestamp=None):

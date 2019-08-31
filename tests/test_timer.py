@@ -27,6 +27,24 @@ class TestTimerMethods(unittest.TestCase):
             sleep(0.05)
             logger.critical(actual)
 
+    def test_singleton_property_for_class_creation(self):
+        timer.restart()
+        timer.new_checkpoint()
+        timer.new_checkpoint(name='two')
+
+        number_of_checkpoints = len(timer._checkpoints)
+        _start_checkpoint = timer._start_checkpoint
+        _current_checkpoint = timer._current_checkpoint
+
+        _timer = Timer()
+
+        self.assertEqual(3, len(_timer._checkpoints))
+        self.assertEqual(number_of_checkpoints, len(_timer._checkpoints))
+        self.assertEqual(_start_checkpoint, _timer._start_checkpoint)
+        self.assertEqual(_current_checkpoint, _timer._current_checkpoint)
+        self.assertTrue(_timer._start_checkpoint != _timer._current_checkpoint)
+        self.assertTrue(_timer._start_checkpoint.duration() < timedelta(milliseconds=500))
+
     def test_restart(self):
         timer.new_checkpoint()
         timer.new_checkpoint(name='two')
