@@ -1,12 +1,12 @@
 # timer
-Easy-to-use timer for tracking runtimes.
+Easy-to-use timer for tracking runtimes. <br><br>
 `pip install sometimer`
 
 ## Examples
 ### Main functionality: summary function
 
 ```python
-from timer import timer
+from sometimer import timer
 
 # Main functionality is the summary function:
 timer.new_checkpoint()
@@ -51,6 +51,8 @@ Some functions are always heavy (e.g. _load_, _data preprocessing_, _data augmen
 and might be useful to time:
 
 ```python
+from sometimer import time_this_method
+
 @time_this_method
 def heavy_preprocessing(data):
     pass
