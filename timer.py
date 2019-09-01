@@ -122,10 +122,11 @@ class Timer:
         longest_duration = max((len(f'{c.duration().total_seconds():.0f}') for c in cls._checkpoints)) + cls._decimals + (cls._decimals > 0)
 
         _summary = f'{cls._name} summary\n'
+        _summary += f'{"":{longest_checkpoint_name + 2}}{"-start-":{max_start_time_length}}   {" " if max_start_time_length > (1 + cls._decimals + (cls._decimals > 0)) else ""}-duration-\n'
         for checkpoint in cls._checkpoints:
             name = f'{checkpoint.name + ": " if checkpoint.name is not None else "":{longest_checkpoint_name + 2}}'
             time = f'{cls._time_since_start(timestamp=checkpoint.start).total_seconds():{max_start_time_length}.{cls._decimals}f}s    '
-            duration = f'duration={checkpoint.duration().total_seconds():{longest_duration}.{cls._decimals}f}s\n'
+            duration = f'{checkpoint.duration().total_seconds():{longest_duration}.{cls._decimals}f}s\n'
             _summary += name + time + duration
 
         end_name = f'{"end:":{longest_checkpoint_name + 2}}'
