@@ -4,10 +4,10 @@ import unittest
 from time import sleep
 from datetime import timedelta
 
-from sometimer.timer import timer
-from sometimer.timer import Timer
-from sometimer.timer import Checkpoint
-from sometimer.timer import time_this_method
+from sometimer.sometimer import timer
+from sometimer.sometimer import Timer
+from sometimer.sometimer import Checkpoint
+from sometimer.sometimer import time_this_method
 
 
 logger = logging.getLogger('Test Timer')
@@ -16,7 +16,7 @@ logger = logging.getLogger('Test Timer')
 class TestTimerMethods(unittest.TestCase):
 
     def test_import(self):
-        from sometimer.timer import timer
+        from sometimer.sometimer import timer
         self.assertEqual(type(timer), Timer)
 
     def test_call_doesnt_crash(self):
