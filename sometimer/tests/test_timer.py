@@ -86,6 +86,9 @@ class TestTimerMethods(unittest.TestCase):
     def test_many_checkpoints(self):
         pass
 
+    def test_checkpoints_with_no_names(self):
+        pass
+
     def test_string_representation(self):
         pass
 

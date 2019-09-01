@@ -2,6 +2,7 @@ from datetime import datetime
 
 
 _first_checkpoint_name = 'start'
+_default_checkpoint_name = ''
 
 
 class Timer:
@@ -118,7 +119,7 @@ class Timer:
     @classmethod
     def summary(cls):
         max_start_time_length = len(f'{cls.duration().total_seconds():.0f}') + cls._decimals + (cls._decimals > 0)
-        longest_checkpoint_name = max((len(c.name) for c in cls._checkpoints))
+        longest_checkpoint_name = max((len(c.name) for c in cls._checkpoints if c.name is not None))
         longest_duration = max((len(f'{c.duration().total_seconds():.0f}') for c in cls._checkpoints)) + cls._decimals + (cls._decimals > 0)
 
         _summary = f'{cls._name} summary\n'
@@ -163,9 +164,9 @@ def time_this_method(method=None, name=None):
 
 class Checkpoint:
     def __init__(self, name=None, start=None):
+        self.name = name or _default_checkpoint_name
         self.start = start or datetime.now()
         self.end = None
-        self.name = name
 
     def __eq__(self, other):
         return type(other) == type(self) and \
