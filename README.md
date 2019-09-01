@@ -1,5 +1,6 @@
 # timer
 Easy-to-use timer for tracking runtimes.
+`pip install sometimer`
 
 ## Examples
 ### Main functionality: summary function
