@@ -3,3 +3,13 @@
 
 # Binary files
 __pycache__/
+
+# Build files
+build/
+
+# Dist binary files
+dist/
+sometimer.egg-info/
+
+# Setup file for packaging
+setup.py
