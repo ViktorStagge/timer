@@ -51,7 +51,8 @@ class TestTimerMethods(unittest.TestCase):
         sleep(1)
         timer.restart()
         self.assertTrue(len(timer._checkpoints) == 1)
-        self.assertTrue(timer._start_checkpoint == timer._current_checkpoint)
+        self.assertIsNotNone(timer._start_checkpoint)
+        self.assertIsNone(timer._current_checkpoint)
         self.assertTrue(timer._start_checkpoint.duration() < timedelta(milliseconds=500))
 
     def test_one_checkpoint(self):
@@ -79,7 +80,8 @@ class TestTimerMethods(unittest.TestCase):
         self.assertEqual(number_of_checkpoints_before, 1, f'expected 1, received {number_of_checkpoints_before} checkpoints')
         self.assertEqual(number_of_checkpoints_after, 2, f'expected 2, received {number_of_checkpoints_after} checkpoints')
         self.assertTrue(_start_checkpoint_before == _start_checkpoint_after, '_start_checkpoint changed')
-        self.assertTrue(_start_checkpoint_before == _current_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNone(_current_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNotNone(_start_checkpoint_before, 'mismatch between first checkpoints')
         self.assertTrue(_start_checkpoint_after != _current_checkpoint_after, 'current checkpoint or start checkpoint changed unexpectedly')
         self.assertEqual(type(checkpoint), Checkpoint, '.new_checkpoint() does not return the Checkpoint')
 
@@ -139,10 +141,11 @@ class TestTimerMethods(unittest.TestCase):
         self.assertEqual(number_of_checkpoints_after, 2,
                          f'expected 2, received {number_of_checkpoints_after} checkpoints')
         self.assertTrue(_start_checkpoint_before == _start_checkpoint_after, '_start_checkpoint changed')
-        self.assertTrue(_start_checkpoint_before == _current_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNotNone(_start_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNone(_current_checkpoint_before, 'mismatch between first checkpoints')
         self.assertTrue(_start_checkpoint_after != _current_checkpoint_after,
                         'current checkpoint or start checkpoint changed unexpectedly')
-        self.assertEqual(_current_checkpoint_after, None, 'created checkpoint was not ended properly')
+        self.assertIsNone(_current_checkpoint_after, 'created checkpoint was not ended properly')
 
     def test_decorator_many_checkpoints(self):
         named_and_timed_function = 'user-specified-name'
@@ -153,9 +156,11 @@ class TestTimerMethods(unittest.TestCase):
         a_timed_function_with_name()
         timer.new_checkpoint(name='checkpoint_1')
 
+        checkpoints = list(c for c in timer._checkpoints.values())
+
         self.assertEqual(len(timer._checkpoints), 5, 'incorrect amount of checkpoints created')
-        self.assertEqual(timer._checkpoints[2].name, 'a_timed_function', 'incorrectly named checkpoint when not passing a `name`')
-        self.assertEqual(timer._checkpoints[3].name, named_and_timed_function, 'incorrectly named checkpoiont when passing a `name`')
+        self.assertEqual(checkpoints[2][0].name, 'a_timed_function', 'incorrectly named checkpoint when not passing a `name`')
+        self.assertEqual(checkpoints[3][0].name, named_and_timed_function, 'incorrectly named checkpoiont when passing a `name`')
 
     def test_decorator_one_checkpoint_with_kwargs(self):
         timer.restart()
@@ -174,7 +179,8 @@ class TestTimerMethods(unittest.TestCase):
         self.assertEqual(number_of_checkpoints_after, 2,
                          f'expected 2, received {number_of_checkpoints_after} checkpoints')
         self.assertTrue(_start_checkpoint_before == _start_checkpoint_after, '_start_checkpoint changed')
-        self.assertTrue(_start_checkpoint_before == _current_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNotNone(_start_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNone(_current_checkpoint_before, 'mismatch between first checkpoints')
         self.assertTrue(_start_checkpoint_after != _current_checkpoint_after,
                         'current checkpoint or start checkpoint changed unexpectedly')
         self.assertEqual(_current_checkpoint_after, None, 'created checkpoint was not ended properly')
@@ -186,9 +192,10 @@ class TestTimerMethods(unittest.TestCase):
         a_timed_function_with_name_and_kwargs()
         timer.new_checkpoint(name='checkpoint_1')
 
+        checkpoints = list(c for c in timer._checkpoints.values())
         self.assertEqual(len(timer._checkpoints), 5, 'incorrect amount of checkpoints created')
-        self.assertEqual('a_timed_function_with_kwargs', timer._checkpoints[2].name, 'incorrectly named checkpoint when not passing a `name`')
-        self.assertEqual('user-specified-name', timer._checkpoints[3].name, 'incorrectly named checkpoiont when passing a `name`')
+        self.assertEqual('a_timed_function_with_kwargs', checkpoints[2][0].name, 'incorrectly named checkpoint when not passing a `name`')
+        self.assertEqual('user-specified-name', checkpoints[3][0].name, 'incorrectly named checkpoiont when passing a `name`')
 
     def test_decorator_one_checkpoint_with_args(self):
         timer.restart()
@@ -207,7 +214,8 @@ class TestTimerMethods(unittest.TestCase):
         self.assertEqual(number_of_checkpoints_after, 2,
                          f'expected 2, received {number_of_checkpoints_after} checkpoints')
         self.assertTrue(_start_checkpoint_before == _start_checkpoint_after, '_start_checkpoint changed')
-        self.assertTrue(_start_checkpoint_before == _current_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNotNone(_start_checkpoint_before, 'mismatch between first checkpoints')
+        self.assertIsNone(_current_checkpoint_before, 'mismatch between first checkpoints')
         self.assertTrue(_start_checkpoint_after != _current_checkpoint_after,
                         'current checkpoint or start checkpoint changed unexpectedly')
         self.assertEqual(_current_checkpoint_after, None, 'created checkpoint was not ended properly')
@@ -224,12 +232,13 @@ class TestTimerMethods(unittest.TestCase):
         logger.critical(f'{self.test_decorator_many_checkpoints.__name__}:\n')
         logger.critical(timer.summary())
 
-        for checkpoint in timer._checkpoints:
-            logger.critical(f'{checkpoint.name}')
+        for checkpoint in timer._checkpoints.values():
+            logger.critical(f'{checkpoint[0].name}')
 
+        checkpoints = list(c for c in timer._checkpoints.values())
         self.assertEqual(len(timer._checkpoints), 5, 'incorrect amount of checkpoints created')
-        self.assertEqual(timer._checkpoints[2].name, 'a_timed_function_with_args', 'incorrectly named checkpoint when not passing a `name`')
-        self.assertEqual(timer._checkpoints[3].name, named_and_timed_function, 'incorrectly named checkpoiont when passing a `name`')
+        self.assertEqual(checkpoints[2][0].name, 'a_timed_function_with_args', 'incorrectly named checkpoint when not passing a `name`')
+        self.assertEqual(checkpoints[3][0].name, named_and_timed_function, 'incorrectly named checkpoiont when passing a `name`')
 
 
 @time_this_method
