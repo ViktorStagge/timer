@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 
 _first_checkpoint_name = 'start'
-_default_checkpoint_name = ''
+_default_checkpoint_name = 'checkpoint'
 _start_column = '-start-'
 _duration_column = '-duration-'
 _count_column = '-count'
@@ -99,7 +99,6 @@ class Timer:
 
         cls._current_checkpoint = checkpoint
         return checkpoint
-
 
     @classmethod
     def duration(cls):
