@@ -8,7 +8,7 @@ _first_checkpoint_name = 'start'
 _default_checkpoint_name = 'checkpoint'
 _start_column = '-start-'
 _duration_column = '-duration-'
-_count_column = '-count'
+_count_column = '-count-'
 _average_column = '-average-'
 
 class Timer:
@@ -31,8 +31,8 @@ class Timer:
             cls._name = name
             cls._output_format = output_format
             cls._decimals = print_decimals
-            cls._show_count = False
-            cls._show_average = False
+            cls._show_count = 'infer'
+            cls._show_average = 'infer'
 
             cls._checkpoints = Checkpoints()
             cls._checkpoints.new_checkpoint(name=_first_checkpoint_name, created_by=CheckpointType.method)
@@ -148,38 +148,45 @@ class Timer:
     def summary(cls):
         cs = cls._checkpoints.summary()
 
-        max_name_length = max(len(name) for name in cs)
+        length_name = max(len(name) for name in cs)
+
         max_start_time = cls.duration().total_seconds()
-        max_start_time_length = max(len(_start_column), len(f'{max_start_time:.0f}') + cls._decimals + (cls._decimals > 0))
+        length_start_time = max(len(_start_column), len(f'{max_start_time:.0f}') + cls._decimals + (cls._decimals > 0))
+        length_start_time_header = max(len(_start_column), 1 + len(f'{max_start_time:.0f}') + cls._decimals + (cls._decimals > 0))
+
         max_duration = max(v['total_duration'].total_seconds() for v in cs.values())
-        max_duration_length = max(len(_duration_column), len(f'{max_duration:.0f}') + cls._decimals + (cls._decimals > 0))
-        max_count_length = max(len(str(v['count'])) for v in cs.values())
-        max_count_length = max(len(_count_column), max_count_length)
+        length_duration = max(len(_duration_column), len(f'{max_duration:.0f}') + cls._decimals + (cls._decimals > 0))
+        length_duration_header = max(len(_duration_column), 1 + len(f'{max_duration:.0f}') + cls._decimals + (cls._decimals > 0))
+
+        max_count = max(v['count'] for v in cs.values())
+        length_count = max(len(_count_column), len(str(max_count)))
+
         max_average = max((v['total_duration'] / v['count']).total_seconds() for v in cs.values())
-        max_average_length = max(len(_average_column), len(f'{max_average:.0f}') + cls._decimals + (cls._decimals > 0))
+        length_average = max(len(_average_column), len(f'{max_average:.0f}') + cls._decimals + (cls._decimals > 0))
+        length_average_header = max(len(_average_column), 1 + len(f'{max_average:.0f}') + cls._decimals + (cls._decimals > 0))
 
         # Header
         _summary = f'{cls._name} summary\n'
-        _summary += f'{"":{max_name_length}}   {_start_column:>{max_start_time_length}}    {_duration_column:>{max_duration_length}}'
-        if cls._show_count:
-            _summary += f'   {_count_column:{max_count_length}}'
-        if cls._show_average:
-            _summary += f'   {_average_column:{max_average_length}}'
+        _summary += f'{"":{length_name}}   {_start_column:>{length_start_time_header}}    {_duration_column:>{length_duration_header}}'
+        if cls._show_average and max_count > 1:
+            _summary += f'    {_average_column:>{length_average_header}}'
+        if cls._show_count and max_count > 1:
+            _summary += f'   {_count_column:>{length_count}}'
         _summary += '\n'
 
         # Checkpoint entries
         for name, v in cs.items():
             time_from_start = cls._time_from_start(timestamp=v["first_start_time"]).total_seconds()
-            _summary += f'{name:{max_name_length}}: {time_from_start: {max_start_time_length}.{cls._decimals}f}s' \
-                        f'   ' + f'{v["total_duration"].total_seconds(): {max_duration_length}.{cls._decimals}f}s'
-            if cls._show_average:
-                _summary += f'    {v["total_duration"] / v["count"]: {max_average_length}.{cls._decimals}f}s'
-            if cls._show_count:
-                _summary += f'   {v["count"]: {max_count_length}}'
+            _summary += f'{name:{length_name}}: {time_from_start: {length_start_time}.{cls._decimals}f}s' \
+                        f'   ' + f'{v["total_duration"].total_seconds(): {length_duration}.{cls._decimals}f}s'
+            if cls._show_average and max_count > 1:
+                _summary += f'   {(v["total_duration"] / v["count"]).total_seconds(): {length_average}.{cls._decimals}f}s'
+            if cls._show_count and max_count > 1:
+                _summary += f'   {v["count"]: {length_count}}'
             _summary += '\n'
 
         # Final line
-        _summary += f'{"end":{max_name_length}}: {cls.duration().total_seconds(): {max_start_time_length}.{cls._decimals}f}s\n'
+        _summary += f'{"end:":{length_name + 2}}{cls.duration().total_seconds(): {length_start_time}.{cls._decimals}f}s\n'
         return _summary
 
     @classmethod
