@@ -240,6 +240,36 @@ class TestTimerMethods(unittest.TestCase):
         self.assertEqual(checkpoints[2][0].name, 'a_timed_function_with_args', 'incorrectly named checkpoint when not passing a `name`')
         self.assertEqual(checkpoints[3][0].name, named_and_timed_function, 'incorrectly named checkpoiont when passing a `name`')
 
+    def test_multiple_count(self):
+        timer.restart()
+        timer.new_checkpoint('mercury')
+        timer.new_checkpoint('venus')
+        timer.new_checkpoint('tellus')
+        timer.new_checkpoint('mars')
+        timer.new_checkpoint('mercury')
+        timer.new_checkpoint('mercury')
+        timer.new_checkpoint('mars')
+        logger.critical(timer.summary())
+
+        cs = timer._checkpoints.summary()
+
+        logger.critical(cs.keys())
+
+        counts = [v['count'] for v in cs.values()]
+
+        self.assertIn(1, counts)
+        self.assertIn(2, counts)
+        self.assertIn(3, counts)
+        self.assertGreater(4, max(counts))
+
+    def test_name_as_arg(self):
+        try:
+            @time_this_method('no kwarg, only arg')
+            def arbitrary_method_name():
+                pass
+        except AttributeError as e:
+            self.fail(f'unable to create method using `@time_this_method("no kwarg, only arg")`: {e}')
+
 
 @time_this_method
 def a_timed_function():

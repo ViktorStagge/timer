@@ -1,8 +1,9 @@
+import itertools
+
 from enum import Enum
 from datetime import datetime
 from datetime import timedelta
 from collections import OrderedDict
-
 
 _first_checkpoint_name = 'start'
 _default_checkpoint_name = 'checkpoint'
@@ -10,6 +11,11 @@ _start_column = '-start-'
 _duration_column = '-duration-'
 _count_column = '-count-'
 _average_column = '-average-'
+
+_sep_summary_start = '    '  # 4 chars preferred
+_sep_name_to_columns = ': '  # 2 chars preferred
+_del_one_count = '-'  # 1 char preferred
+
 
 class Timer:
     _name = None
@@ -167,26 +173,42 @@ class Timer:
 
         # Header
         _summary = f'{cls._name} summary\n'
-        _summary += f'{"":{length_name}}   {_start_column:>{length_start_time_header}}    {_duration_column:>{length_duration_header}}'
+        _summary += f'{"":{length_name}}'
+        _summary += f'   {_duration_column:>{length_duration_header}}'
         if cls._show_average and max_count > 1:
             _summary += f'    {_average_column:>{length_average_header}}'
         if cls._show_count and max_count > 1:
             _summary += f'   {_count_column:>{length_count}}'
+        _summary += f'{_sep_summary_start} {_start_column:>{length_start_time_header}}'
         _summary += '\n'
 
         # Checkpoint entries
-        for name, v in cs.items():
+        name_first = next(iter(cs))
+        v_first = cs[name_first]
+        length_until_start = len(_sep_name_to_columns) + \
+                             length_duration + 1 + \
+                             (length_average + 4 if cls._show_average and max_count > 1 else 0) + \
+                             (length_count + 3 if cls._show_count and max_count > 1 else 0) + \
+                             len(_sep_summary_start)
+
+        _summary += f'{name_first:{length_name}}'
+        _summary += f'{" ":{length_until_start}}{v_first["total_duration"].total_seconds():{length_start_time}.{cls._decimals}f}s\n'
+
+        for name, v in itertools.islice(cs.items(), 1, None):
             time_from_start = cls._time_from_start(timestamp=v["first_start_time"]).total_seconds()
-            _summary += f'{name:{length_name}}: {time_from_start: {length_start_time}.{cls._decimals}f}s' \
-                        f'   ' + f'{v["total_duration"].total_seconds(): {length_duration}.{cls._decimals}f}s'
+
+            _summary += f'{name:{length_name}}'
+            _summary += f'{_sep_name_to_columns}{v["total_duration"].total_seconds():{length_duration}.{cls._decimals}f}s'
             if cls._show_average and max_count > 1:
                 _summary += f'   {(v["total_duration"] / v["count"]).total_seconds(): {length_average}.{cls._decimals}f}s'
             if cls._show_count and max_count > 1:
-                _summary += f'   {v["count"]: {length_count}}'
+                count = str(v['count']) if v['count'] > 1 else _del_one_count
+                _summary += f'   {count:>{length_count}}'
+            _summary += f'{_sep_summary_start}{time_from_start: {length_start_time}.{cls._decimals}f}s'
             _summary += '\n'
 
         # Final line
-        _summary += f'{"end:":{length_name + 2}}{cls.duration().total_seconds(): {length_start_time}.{cls._decimals}f}s\n'
+        _summary += f'{"end":{length_name}}{" ":{length_until_start}}{cls.duration().total_seconds(): {length_start_time}.{cls._decimals}f}s\n'
         return _summary
 
     @classmethod
@@ -272,7 +294,7 @@ class Checkpoints(OrderedDict):
         checkpoints = self.get(name, list())
         recurrent_checkpoints = list()
         for c in reversed(checkpoints):
-            if c.has_ended and not c.is_recurrent():
+            if c.has_ended() and not c.is_recurrent():
                 break
             recurrent_checkpoints.append(c)
 
